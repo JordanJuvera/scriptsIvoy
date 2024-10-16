@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <title>HERRAMIENTAS SOPORTE</title>
+  </head>
+  <link rel="stylesheet" href="./css/estilos.css">
+  <script src="./js/apikeys.js"></script>
+  <script src="./js/generadorQuerys.js"></script>
+  <script src="./js/generarEnvios.js"></script>
+  <script type="text/javascript">
+
+  function tratarFechas(){
+  	function parseDateTime(dateTimeStr) {
+    // Mapeo de nombres de meses a números
+    const monthMap = {
+        "ene": 0, "feb": 1, "mar": 2, "abr": 3, "may": 4,
+        "jun": 5, "jul": 6, "ago": 7, "sep": 8, "oct": 9,
+        "nov": 10, "dic": 11
+    };
+    
+    // Separar fecha y hora
+    
+    const [datePart, timePart,ampm] = dateTimeStr.split(' ');
+    const [day, monthStr, year] = datePart.split('/');
+    const month = monthMap[monthStr];
+    
+    // Convertir el año
+    const fullYear = `20${year}`;
+    
+    // Convertir la hora
+  
+    let [hours, minutes] = timePart.split(':').map(Number);
+    
+    if (ampm === "PM" && hours !== 12) {
+    	  console.log("Entra en Val PM")
+        hours += 12;
+    }
+    if (ampm === "AM" && hours === 12) {
+        hours = 0;
+    }
+    
+    // Crear el objeto Date
+    return new Date(fullYear, month, day, hours, minutes);
+}
+
+// Ejemplo de uso
+let dateTimeStr1 =  document.querySelector('#fechasCreadas').value;fechaActualizadas
+let dateTimeStr2 = document.querySelector('#fechaActualizadas').value; 
+
+const arrayTimeCreada = dateTimeStr1.split('\n');
+const arrayTimeActualizada = dateTimeStr2.split('\n');
+const arrayTimeResult = [];
+
+console.log(arrayTimeCreada);
+console.log(arrayTimeActualizada);
+
+
+if( arrayTimeActualizada.length === arrayTimeCreada.length){
+
+	for( let i = 0; i < arrayTimeActualizada.length; i++ ){
+
+		 let date1 = parseDateTime(arrayTimeCreada[i]);
+		 let date2 = parseDateTime(arrayTimeActualizada[i]);
+
+		 console.log("Fecha 1:", date1);
+		 console.log("Fecha 2:", date2);
+
+		// Calcular la diferencia en milisegundos
+		let diffInMs = date2 - date1;
+
+		console.log("diffInMs --"+diffInMs)
+		// Convertir la diferencia a días, horas, minutos, segundos
+		let diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+		let diffInHours = diffInMs / (1000 * 60 * 60);
+		let diffInMinutes = diffInMs / (1000 * 60);
+		let diffInSeconds = diffInMs / 1000;
+
+		console.log("Diferencia en horas:", diffInHours);
+		console.log("Diferencia en minutos:", diffInMinutes);
+		console.log("Diferencia en segundos:", diffInSeconds);
+
+		arrayTimeResult.push(diffInHours.toFixed(4));
+
+	}
+}
+		console.log(arrayTimeResult);
+		document.querySelector('#fechasDiferencia').value = arrayTimeResult.toString().replace(/[, ]+/g, '\n').replace(/\./g, ',');
+		
+
+  }	
+  function compararArrays(){	
+  	
+  	let input1 = (document.querySelector('#arrayOriginal').value).replace(/\t/g, '').replace(/\n/g, '').replace(/'/g,'');
+  	let input2 = (document.querySelector('#arrayElastic').value).replace(/\t/g, '').replace(/\n/g, '').replace(/'/g,'');
+  	if( input1 !== "" && input2 != ""){
+	  	
+	  	const arrayOriginal = input1.split(',');
+			const arrayElastic = input2.split(',');
+
+			const resultado =  arrayOriginal.filter ( (elemento) =>  !arrayElastic.includes(elemento) );
+			document.querySelector('#resultadoArray').value = '"'+resultado.join('","')+'"';
+			document.querySelector('#totalArrayOriginal').innerHTML = arrayOriginal.length
+			document.querySelector('#totalArrayElastic').innerHTML = arrayElastic.length
+			document.querySelector('#totalResultadoArray').innerHTML = resultado.length
+		}else{
+			alert ('Ingresa las guias en los campos');
+		}	
+	}
+
+	
+	function compararZipcodes(){
+
+
+		function convertToCSV(arr) {
+		    const array = [Object.keys(arr[0])].concat(arr);
+
+		    return array.map(it => {
+		        return Object.values(it).toString();
+		    }).join('\n');
+		}	
+
+		function downloadCSV(csv, filename) {
+		    const csvFile = new Blob([csv], { type: "text/csv" });
+		    const downloadLink = document.createElement("a");
+
+		    downloadLink.download = filename;
+		    downloadLink.href = window.URL.createObjectURL(csvFile);
+		    downloadLink.style.display = "none";
+
+		    document.body.appendChild(downloadLink);
+		    downloadLink.click();
+		    document.body.removeChild(downloadLink);
+		}
+
+
+
+		let input1 = (document.querySelector('#zipCodesInternos').value).replace(/\t/g, '').replace(/\n/g, '').replace(/'/g,'');
+  	let input2 = (document.querySelector('#zipCodesSepomex').value).replace(/\t/g, '').replace(/\n/g, '').replace(/'/g,'');
+		
+		const arrayZipcodesInternos = input1.split(',');
+
+		const arrayZipcodesInternosSanitizado = arrayZipcodesInternos.map((elemento) => {
+			
+			console.log(elemento.length);
+			return elemento = elemento.length < 5 ? "0"+elemento : elemento;
+			
+		});
+
+		
+
+		const arrayZipCodesSepomex = input2.split(',');
+
+
+		console.log(arrayZipcodesInternos);
+		console.log(arrayZipcodesInternosSanitizado);
+		console.log(arrayZipCodesSepomex);
+
+		
+		const resultadoZipcodes =  arrayZipcodesInternosSanitizado.map ( (elemento) =>  {
+
+			validate = arrayZipCodesSepomex.includes(elemento) ? "x" : "" 
+
+		return { "cp" : elemento , "validate": validate};
+		});
+		
+		console.log(resultadoZipcodes);
+		//const text = JSON.stringify(resultadoZipcodes);
+		document.querySelector('#ZipcodesValidation').value = resultadoZipcodes.join(',');
+		
+		convertToCSV(resultadoZipcodes);
+		const csv = convertToCSV(resultadoZipcodes);
+		downloadCSV(csv, 'datos_ZipCodes_Cepormex.csv');
+	
+
+	}
+
+ </script>
+  <body>
+  	<header class="header"></header>
+  	<div class="container">
+			<div class="section">
+				<h1 class="title-section">Generador Api keys</h1>
+		    <div class="container-section">
+		    	<h3>¡Da clic en el botón!</h3>
+		    	<p id="key_QA"></p>
+		    	<p id="key_Prod"></p>
+		    </div>
+		    <button class="botonPrincipal" onclick="obtenerApiKey();">Generar</button>
+			</div>
+			<div class="section">
+				<h1 class="title-section">Formular Querys Zipcodes-Hubs</h1>
+					<div class="container-section">
+						<h3>¡Da clic en el botón!</h3>
+
+							<input type="file" id="archivoInput" name="archivoInput" accept=".csv">
+							<br><br>
+							<div style="overflow: scroll; height: 250px; margin-bottom: 15px;">
+								<table id="tablaDatos">
+						        <!-- Aquí se agregará la tabla dinámicamente -->
+						    	</table>
+					    </div>	
+							
+					</div>
+					<button class="botonPrincipal" onclick="leerArchivo();">mostrar/exportar</button>
+			</div>
+			<div class="section">
+				<h1 class="title-section">Filtrado de guias(uso para envios faltantes de eventos en Elastic)</h1>
+				<div class="container-section">
+						<h3>¡Da clic en el botón!</h3>
+							<label for="arrayOriginal" style="width:100%">Ingresa guías separadas por coma</label>
+							<p>Total elementos: <span id="totalArrayOriginal"></span></p>
+							<textarea style="width:100%" name="textarea" rows="10" id="arrayOriginal" name="arrayOriginal"></textarea>
+							<br><br>
+							<label for="arrayElastic">Ingresa guías a comparar separadas por coma</label>
+							<p>Total elementos: <span id="totalArrayElastic"></span></p>
+							<textarea style="width:100%" name="textarea" rows="10" id="arrayElastic" name="arrayElastic"></textarea>
+							<br><br>
+							<label for="resultadoArray">resultado</label>
+							<p>Total elementos: <span id="totalResultadoArray"></span></p>
+							<textarea style="width:100%" name="textarea" rows="10" id="resultadoArray" name="resultadoArray"></textarea>
+							<br><br>
+							
+					</div>
+					<button class="botonPrincipal" onclick="compararArrays();">Generar</button> 
+			</div>
+			<section class="section">
+				<h1 class="title-section">Generar Envíos API-Client</h1>
+				<div class="container-section">
+					<h3>¡Da clic en el botón!</h3>
+						<input type="file" id="packagesInfoApi" name="packagesInfoApi" accept=".csv">
+							<br><br>
+							<div style="overflow: scroll; height: 250px; margin-bottom: 15px;">
+								<table id="tablaDatosPackages">
+						        <!-- Aquí se agregará la tabla dinámicamente -->
+						    </table>
+					    </div>
+				</div>
+				<button class="botonPrincipal" onclick="leerArchivoPackage();">Generar</button>
+			</section>
+			<section class="section">
+				<h1 class="title-section">VALIDACIÓN DE ZIPCODES</h1>
+				<div class="container-section">
+					<h3>!Da clic en el botón</h3>
+						<label for="zipCodesInternos" style="width:100%">Ingresa zipcodes separadas por coma</label>
+							<p>Zipcodes Internos: <span id="totalArrayOriginal"></span></p>
+							<textarea style="width:100%" name="textarea" rows="10" id="zipCodesInternos" name="zipCodesInternos"></textarea>
+							<br><br>
+							<label for="arrayElastic">Ingresa guías a comparar separadas por coma</label>
+							<p>Zipcodes Sepomex: <span id="totalArrayElastic"></span></p>
+							<textarea style="width:100%" name="textarea" rows="10" id="zipCodesSepomex" name="zipCodesSepomex"></textarea>
+							<br><br>
+							<label for="resultadoArray">resultado</label>
+							<p>Total elementos: <span id="totalResultadoArray"></span></p>
+							<textarea style="width:100%" name="textarea" rows="10" id="ZipcodesValidation" name="ZipcodesValidation"></textarea>
+							<br><br>
+							<div style="overflow: scroll; height: 250px; margin-bottom: 15px;">
+								<table id="tablaDatosZipcode">
+						        <!-- Aquí se agregará la tabla dinámicamente -->
+						    </table>
+					    </div>
+				</div>
+				<button class="botonPrincipal" onclick="compararZipcodes();">Generar</button>	
+			</section>
+			<section class="section">
+				<h1 class="title-section">INGRESAR FECHAS</h1>
+				<div class="container-section">
+					<h3>!Da clic en el botón</h3>
+							<label for="fechasCreadas">Ingresa guías a comparar separadas por coma</label>
+							<p>FECHAS CREADAS: <span id="totalFechasCreadas"></span></p>
+							<textarea style="width:100%" name="textarea" rows="10" id="fechasCreadas" name="fechasCreadas"></textarea>
+							<br><br>
+							<label for="fechasActualizadas" style="width:100%">Ingresa zipcodes separadas por coma</label>
+							<p>FECHA ACTUALIZADAS: <span id="totalFechasActualizadas"></span></p>
+							<textarea style="width:100%" name="textarea" rows="10" id="fechaActualizadas" name="fechaActualizadas"></textarea>
+							<br><br>
+							<label for="resultadoFechas">resultado</label>
+							<p>DIFERENCIA EN HORAS: <span id="totalFechasDiferencia"></span></p>
+							<textarea style="width:100%" name="textarea" rows="10" id="fechasDiferencia" name="fechasDiferencia"></textarea>
+				</div>
+				<button class="botonPrincipal" onclick="tratarFechas();">Generar</button>	
+			</section>
+		</div>
+		<footer class="footer"></footer>	    
+  </body>
+</html>
